@@ -1,0 +1,580 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>じゃあ、その話聞かせて</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=DotGothic16&display=swap');
+
+  :root {
+    --bg: #fdf6e3;
+    --ink: #1a1209;
+    --pop1: #ff4757;
+    --pop2: #ffa502;
+    --pop3: #2ed573;
+    --pop4: #1e90ff;
+    --pop5: #a55eea;
+    --card: #fffdf5;
+    --shadow: #d4c9a8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Zen Maru Gothic', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 16px 60px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(255,71,87,0.07) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(30,144,255,0.07) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(165,94,234,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .noise {
+    position: fixed;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+
+  header {
+    text-align: center;
+    padding-top: 16px;
+  }
+
+  .title-badge {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+
+  h1 {
+    font-size: clamp(28px, 7vw, 48px);
+    font-weight: 900;
+    color: var(--ink);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  h1 span {
+    position: relative;
+    display: inline-block;
+  }
+
+  h1 span::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 2px;
+    height: 6px;
+    background: var(--pop2);
+    z-index: -1;
+    transform: skewX(-6deg);
+  }
+
+  .subtitle {
+    margin-top: 10px;
+    color: #7a6e58;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .parts-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .part-card {
+    flex: 1;
+    min-width: 160px;
+    max-width: 200px;
+    background: var(--card);
+    border: 2.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 4px 4px 0 var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .part-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .part-card.when::before { background: var(--pop1); }
+  .part-card.where::before { background: var(--pop4); }
+  .part-card.who::before { background: var(--pop5); }
+
+  .part-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+    opacity: 0.55;
+  }
+
+  .part-card.when .part-label { color: var(--pop1); }
+  .part-card.where .part-label { color: var(--pop4); }
+  .part-card.who .part-label { color: var(--pop5); }
+
+  .part-value {
+    font-size: clamp(15px, 3.5vw, 18px);
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .part-value.empty {
+    color: #bbb;
+    font-weight: 400;
+    font-size: 14px;
+  }
+
+  .btn-generate {
+    width: 100%;
+    max-width: 340px;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 20px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: clamp(18px, 4.5vw, 26px);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    padding: 18px 32px;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 5px 5px 0 var(--pop1), 10px 10px 0 rgba(255,71,87,0.2);
+    transition: transform 0.12s, box-shadow 0.12s;
+    user-select: none;
+  }
+
+  .btn-generate:active {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0 var(--pop1), 4px 4px 0 rgba(255,71,87,0.2);
+  }
+
+  .btn-generate:hover {
+    background: #2d2010;
+  }
+
+  .btn-generate .emoji {
+    margin-right: 8px;
+    animation: spin-slow 3s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin-slow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .story-box {
+    width: 100%;
+    background: var(--card);
+    border: 2.5px solid var(--ink);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: 6px 6px 0 var(--shadow);
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  .story-box.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .story-box::before {
+    content: '✦';
+    position: absolute;
+    top: 10px; right: 14px;
+    font-size: 18px;
+    color: var(--pop2);
+    opacity: 0.5;
+  }
+
+  .story-box::after {
+    content: '✦';
+    position: absolute;
+    bottom: 10px; left: 14px;
+    font-size: 12px;
+    color: var(--pop4);
+    opacity: 0.4;
+  }
+
+  .story-text {
+    font-size: clamp(16px, 4vw, 22px);
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.75;
+    text-align: center;
+  }
+
+  .story-text .hl-when {
+    display: inline;
+    background: rgba(255,71,87,0.15);
+    color: var(--pop1);
+    border-radius: 4px;
+    padding: 0 3px;
+  }
+
+  .story-text .hl-where {
+    display: inline;
+    background: rgba(30,144,255,0.13);
+    color: var(--pop4);
+    border-radius: 4px;
+    padding: 0 3px;
+  }
+
+  .story-text .hl-who {
+    display: inline;
+    background: rgba(165,94,234,0.13);
+    color: var(--pop5);
+    border-radius: 4px;
+    padding: 0 3px;
+  }
+
+  .story-placeholder {
+    color: #ccc;
+    font-size: 15px;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s 0.3s;
+  }
+
+  .action-row.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .btn-small {
+    border: 2px solid var(--ink);
+    background: white;
+    color: var(--ink);
+    border-radius: 50px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 9px 20px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--shadow);
+    transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
+  }
+
+  .btn-small:hover {
+    background: var(--bg);
+  }
+
+  .btn-small:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 var(--shadow);
+  }
+
+  .btn-copy { border-color: var(--pop3); }
+  .btn-copy:hover { background: rgba(46,213,115,0.1); }
+
+  .btn-again { border-color: var(--pop2); }
+  .btn-again:hover { background: rgba(255,165,2,0.1); }
+
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--ink);
+    color: var(--bg);
+    font-family: 'Zen Maru Gothic', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 22px;
+    border-radius: 50px;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.22,1,0.36,1);
+    z-index: 100;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .dots {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .dot {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.06;
+  }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #bbb;
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    .parts-row { gap: 8px; }
+    .part-card { min-width: 140px; }
+    .story-box { padding: 22px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="dots" id="dots"></div>
+
+<div class="wrapper">
+  <header>
+    <div class="title-badge">RANDOM STORY GENERATOR</div>
+    <h1>じゃあ、その話<br>聞かせて<span>。</span></h1>
+    <p class="subtitle">「いつ」「どこで」「誰が」をランダムに組み合わせて<br>とんでもない1文を生成します。</p>
+  </header>
+
+  <div class="parts-row">
+    <div class="part-card when">
+      <div class="part-label">いつ</div>
+      <div class="part-value empty" id="val-when">？</div>
+    </div>
+    <div class="part-card where">
+      <div class="part-label">どこで</div>
+      <div class="part-value empty" id="val-where">？</div>
+    </div>
+    <div class="part-card who">
+      <div class="part-label">誰が</div>
+      <div class="part-value empty" id="val-who">？</div>
+    </div>
+  </div>
+
+  <button class="btn-generate" id="btn-gen" onclick="generate()">
+    <span class="emoji">🎲</span>生成する
+  </button>
+
+  <div class="story-box" id="story-box">
+    <p class="story-placeholder">ボタンを押すと<br>あなただけのストーリーが誕生します。</p>
+  </div>
+
+  <div class="action-row" id="actions">
+    <button class="btn-small btn-copy" onclick="copyStory()">📋 コピーする</button>
+    <button class="btn-small btn-again" onclick="generate()">🔄 もう一回</button>
+  </div>
+</div>
+
+<footer>© 2026 じゃあ、その話聞かせて</footer>
+<div class="toast" id="toast">コピーしました！</div>
+
+<script>
+const WHEN = [
+  "紀元前4500年頃","紀元前3000年","紀元前2500年","紀元前1000年","紀元前776年","紀元前221年","紀元前44年",
+  "西暦79年","645年","794年","1000年頃","1192年","1333年","1467年","1543年","1600年","1615年","1868年",
+  "1912年","1929年","1945年","1969年","1989年","2000年","2011年","2023年","2024年","2025年",
+  "江戸時代","室町時代","平安時代","奈良時代","縄文時代","弥生時代","戦国時代","明治時代","昭和初期","大正時代",
+  "古代ローマ時代","ルネサンス期","中世ヨーロッパ","大航海時代","産業革命期","冷戦時代","バブル景気の頃",
+  "今から1000年前","今から500年前","今から100年前","今から50年前","今から10年前","今から3年前",
+  "500年後の未来","1000年後の未来","3000年後の未来","遠い未来","ついさっき","昨日","今朝","深夜0時","夕暮れ時"
+];
+
+const WHERE = [
+  "東京","大阪","京都","名古屋","福岡","札幌","神戸","横浜","仙台","広島","那覇","金沢","奈良","長崎","熊本",
+  "北海道","沖縄県","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県",
+  "千葉県","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","静岡県","愛知県","三重県",
+  "滋賀県","奈良県","和歌山県","鳥取県","島根県","岡山県","山口県","徳島県","香川県","愛媛県","高知県",
+  "フランス","イタリア","ドイツ","イギリス","アメリカ","ブラジル","中国","インド","エジプト","オーストラリア",
+  "ロシア","カナダ","メキシコ","スペイン","ギリシャ","トルコ","アルゼンチン","南アフリカ","ノルウェー","スウェーデン",
+  "カリフォルニア州","テキサス州","ニューヨーク州","フロリダ州","アラスカ州","ハワイ州","シベリア","スカンジナビア半島",
+  "サハラ砂漠","アマゾン熱帯雨林","アルプス山脈","ヒマラヤ山脈","グランドキャニオン","シルクロード",
+  "海の底","深海6000m","南極大陸","北極","火山の中","洞窟の奥","宇宙ステーション","月面",
+  "ツンドラ地帯","マングローブ林","サバンナ","針葉樹林","珊瑚礁の海","溶岩台地"
+];
+
+const WHO = [
+  "織田信長","豊臣秀吉","徳川家康","武田信玄","上杉謙信","明智光秀","伊達政宗","坂本龍馬","西郷隆盛","勝海舟",
+  "聖徳太子","紫式部","清少納言","源義経","足利尊氏","北条時宗","黒田官兵衛","千利休","本多忠勝","真田幸村",
+  "ナポレオン","クレオパトラ","シェイクスピア","レオナルド・ダ・ヴィンチ","アインシュタイン","ニュートン",
+  "モーツァルト","ベートーヴェン","マルコ・ポーロ","コロンブス","マリー・キュリー","ガリレオ","チンギス・ハン",
+  "アレクサンドロス大王","ジュリアス・シーザー","エジソン","フロイト","マルクス","ダーウィン","テスラ",
+  "明石家さんま","松本人志","タモリ","ビートたけし","所ジョージ","浜田雅功","岡村隆史",
+  "高校生","小学生","おばあちゃん","サラリーマン","農家のおじさん","宇宙飛行士","忍者","侍","魔法使い",
+  "ロボット工学者","深海探検家","タイムトラベラー","謎の占い師","売れない画家","迷子の旅人","天才ハッカー",
+  "食いしん坊な王様","眠れない科学者","隠居した剣豪","世界一の嘘つき","記憶を失った探偵"
+];
+
+const TEMPLATES = [
+  (w, p, n) => `${w}、${p}で${n}がとんでもないことをしでかした。`,
+  (w, p, n) => `${w}、${p}にて${n}が静かに歴史を変えた。`,
+  (w, p, n) => `${n}は${w}に${p}で謎の行動を起こし、誰も止められなかった。`,
+  (w, p, n) => `${w}のことだ。${p}にいた${n}が、突然すべてを悟ってしまった。`,
+  (w, p, n) => `${p}の${n}が、${w}に世界で一番奇妙な選択をした。`,
+  (w, p, n) => `${w}、${p}。そこに${n}がいた──それだけで十分だった。`,
+  (w, p, n) => `誰も知らないが、${w}に${p}で${n}がひっそりと伝説を残していた。`,
+  (w, p, n) => `${n}が${p}に現れたのは${w}のこと。その日を境に、${p}は変わった。`,
+  (w, p, n) => `${w}。${p}の空の下、${n}だけが真実を知っていた。`,
+  (w, p, n) => `「なぜここに？」${w}、${p}で目撃された${n}は、ただ微笑んだ。`,
+  (w, p, n) => `${n}が${w}に${p}でやらかしたことは、今も語り継がれている。`,
+  (w, p, n) => `${w}の${p}で、${n}はついに決断した。あとは歴史が知っている。`,
+];
+
+let currentStory = '';
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generate() {
+  const when = pick(WHEN);
+  const where = pick(WHERE);
+  const who = pick(WHO);
+
+  document.getElementById('val-when').textContent = when;
+  document.getElementById('val-when').className = 'part-value';
+  document.getElementById('val-where').textContent = where;
+  document.getElementById('val-where').className = 'part-value';
+  document.getElementById('val-who').textContent = who;
+  document.getElementById('val-who').className = 'part-value';
+
+  const tmpl = pick(TEMPLATES);
+  const raw = tmpl(when, where, who);
+  currentStory = raw;
+
+  const html = raw
+    .replace(when, `<span class="hl-when">${when}</span>`)
+    .replace(where, `<span class="hl-where">${where}</span>`)
+    .replace(who, `<span class="hl-who">${who}</span>`);
+
+  const box = document.getElementById('story-box');
+  box.classList.remove('visible');
+
+  setTimeout(() => {
+    box.innerHTML = `<p class="story-text">${html}</p>`;
+    box.classList.add('visible');
+  }, 80);
+
+  document.getElementById('actions').classList.add('visible');
+
+  animateParts();
+}
+
+function animateParts() {
+  const cards = document.querySelectorAll('.part-card');
+  cards.forEach((c, i) => {
+    c.style.transform = 'scale(1.04) translateY(-3px)';
+    c.style.boxShadow = '6px 6px 0 #c8bda0';
+    setTimeout(() => {
+      c.style.transform = '';
+      c.style.boxShadow = '';
+    }, 350 + i * 80);
+  });
+}
+
+function copyStory() {
+  if (!currentStory) return;
+  navigator.clipboard.writeText(currentStory).then(() => showToast('コピーしました！📋'));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+(function spawnDots() {
+  const container = document.getElementById('dots');
+  const colors = ['#ff4757','#ffa502','#2ed573','#1e90ff','#a55eea'];
+  const sizes = [40,60,80,100,140,180];
+  for (let i = 0; i < 14; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    const s = sizes[Math.floor(Math.random() * sizes.length)];
+    d.style.cssText = `
+      width:${s}px; height:${s}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      top:${Math.random()*100}%; left:${Math.random()*100}%;
+      transform: translate(-50%, -50%);
+    `;
+    container.appendChild(d);
+  }
+})();
+
+document.querySelectorAll('.part-card').forEach(c => {
+  c.style.transition = 'transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.25s';
+});
+</script>
+</body>
+</html>
